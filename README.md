@@ -84,3 +84,9 @@ logs/bot.log
 * Uses Binance Futures Testnet
 * Requires valid API keys
 * Run CLI using `python -m bot.cli`
+
+### Order Execution Debugging (Time: 10 mins)
+
+* Fixed limit order price validation issue
+* Understood market price constraints for BUY/SELL orders
+* Successfully executed both MARKET and LIMIT orders

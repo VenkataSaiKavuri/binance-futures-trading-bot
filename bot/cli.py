@@ -1,8 +1,12 @@
 import argparse
+from datetime import datetime
+from binance.exceptions import BinanceAPIException
+
 from bot.client import get_client
 from bot.orders import place_order
 from bot.validators import validate_side, validate_order_type, validate_price
 from bot.logging_config import setup_logger
+
 
 def main():
     setup_logger()
@@ -17,6 +21,11 @@ def main():
 
     args = parser.parse_args()
 
+    # Normalize input
+    args.side = args.side.upper()
+    args.type = args.type.upper()
+    args.symbol = args.symbol.upper()
+
     try:
         validate_side(args.side)
         validate_order_type(args.type)
@@ -24,8 +33,15 @@ def main():
 
         client = get_client()
 
-        print("\n📌 Order Request Summary")
-        print(vars(args))
+        print("=" * 40)
+        print("📌 Order Request Summary")
+        print(f"Symbol      : {args.symbol}")
+        print(f"Side        : {args.side}")
+        print(f"Type        : {args.type}")
+        print(f"Quantity    : {args.quantity}")
+        print(f"Price       : {args.price if args.price else 'N/A'}")
+        print(f"Time        : {datetime.now()}")
+        print("=" * 40)
 
         order = place_order(
             client,
@@ -37,15 +53,20 @@ def main():
         )
 
         print("\n✅ Order Successful!")
-        print({
-            "orderId": order.get("orderId"),
-            "status": order.get("status"),
-            "executedQty": order.get("executedQty"),
-            "avgPrice": order.get("avgPrice", "N/A")
-        })
+        print(f"Order ID    : {order.get('orderId')}")
+        print(f"Status      : {order.get('status')}")
+        print(f"ExecutedQty : {order.get('executedQty')}")
+        print(f"Avg Price   : {order.get('avgPrice', 'N/A')}")
+        print("=" * 40)
+
+    except ValueError as ve:
+        print("\n❌ Validation Error:", str(ve))
+
+    except BinanceAPIException as be:
+        print("\n❌ Binance API Error:", be.message)
 
     except Exception as e:
-        print("\n❌ Order Failed:", str(e))
+        print("\n❌ Unexpected Error:", str(e))
 
 
 if __name__ == "__main__":
